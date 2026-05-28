@@ -1,6 +1,6 @@
 function cdls 
 
-	set -l cdls_version (0.0.0.1)
+	set -l cdls_version "0.0.0.1"
 
 	set -l "CLEAN_TTY" "True"
 
@@ -34,14 +34,18 @@ function cdls
 			case "2" 
 				vim "$argv"
 			case "*"
-				clear
-				echo ""
-				echo -e "$br$argv$nc - is a file!"
-				echo ""
+				if [ "$CLEAN_TTY" = "True" ]
+					clear
+					echo ""
+					echo -e "$br$argv$nc - is a file!"
+				end
+					echo ""
 		end
+		if [ "$CLEAN_TTY" = "True" ]
 			clear
 			echo ""
 			echo -e "$br$argv$nc - is a file!"
+		end
 			echo ""
 	end
 
