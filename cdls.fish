@@ -53,6 +53,7 @@ function cdls
    	cd $argv 2>/dev/null
 	#ls -la --time-style=long-iso | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
 
+	echo "$PWD"
 	printf "$rc$values_for_printf" "permissions" "userown" "groupown" "date created" "file $nc"
 	
 	ls -la --time-style=long-iso | head -n 35 | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
