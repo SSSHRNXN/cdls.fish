@@ -8,6 +8,7 @@ function cdls
 	set -l br (set_color -b red)
 	set -l bc (set_color -b cyan)
 	set -l nc (set_color normal)
+	set -l rc (set_color -r)
 
 	set -l values_for_printf "│ %-14s │ %-10s │ %-10s │ %-16s │ %s\n"
 
@@ -50,21 +51,24 @@ function cdls
 	end
 
    	cd $argv 2>/dev/null
-	printf "$bc$values_for_printf" "permissions" "userown" "groupown" "date created" "file $nc"
-	ls -la --time-style=long-iso | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
+	#ls -la --time-style=long-iso | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
 
-	#	set -l counter_of_files (ls -la | wc -l)
-	#if [ "$counter_of_files" -gt 35 ]
-	#		read -p "Dir contains $counter_of_files files, show them all? [y/n]" show_all_files
-	#		switch $show_all_files
-	#		case "n"
-	#				printf "$bc$values_for_printf" "permissions" "userown" "groupown" "date created" "file $nc"
-	#			ls -la --time-style=long-iso | head -n 30 | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
-	#		case "y"
-	#			printf "$bc$values_for_printf" "permissions" "userown" "groupown" "date created" "file $nc"
-	#			ls -la --time-style=long-iso | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
-	#		end
-	#end	
+	printf "$rc$values_for_printf" "permissions" "userown" "groupown" "date created" "file $nc"
+	
+	ls -la --time-style=long-iso | head -n 35 | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
+	
+	set -l counter_of_files (ls -la | wc -l)
+	if [ "$counter_of_files" -gt 35 ]
+		set -l value_of_contain_files (math "$counter_of_files-35")
+		read -P "$rc Dir contains $value_of_contain_files files more, show them all? [y/n]:$nc" show_all_files
+			switch $show_all_files
+			case "y"
+				printf '\033[1A\033[2K\r' 
+				ls -la --time-style=long-iso | tail -n +35 | awk -v values="$values_for_printf" 'NR>1 {date = $6 " " $7; printf values, $1, $3, $4, date, "\033[36m" $8 "\033[0m"}'
+			case "*"
+				printf '\033[1A\033[2K\r' 
+			end
+	end	
 
 	commandline -r "cdls "
 end
