@@ -1,17 +1,18 @@
 function cdls 
 	#╭╮╰╯─
-	set -l cdls_version "0.0.0.1"
+	set -l cdls_version "0.0.0.2"
 
 	set -l "CLEAN_TTY" "True"
 
-	set -g c (set_color cyan)
-	set -g b (set_color blue --bold --underline)
+	set -g c (set_color cyan)			#for dirs
+	set -g b (set_color blue --bold)		#for files which no executable(work in progress)
 	set -g br (set_color -b red)
 	set -g bc (set_color -b cyan)
 	set -g nc (set_color normal)
-	set -g rc (set_color -r)
+	set -g rc (set_color -r)			#for message when dir contains more than 45 files/dirs
 
 	set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
+	set -l tty_lines_cnt (math $LINES-8)
 
 	function ls_for_cdls
 		set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
@@ -73,20 +74,20 @@ function cdls
 	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date"
 	echo "├───────────────────────────────────────────────────────────┤"
 
-	ls_for_cdls | head -n 45
+	ls_for_cdls | head -n "$tty_lines_cnt"
 	
 	set -l counter_of_files (ls -la | wc -l)
-	if [ "$counter_of_files" -gt 45 ]
-		set -l value_of_contain_files (math "$counter_of_files-45")
+	if [ "$counter_of_files" -gt "$tty_lines_cnt" ]
+		set -l value_of_contain_files (math "$counter_of_files-$tty_lines_cnt")
 		read -P "$rc Dir contains $value_of_contain_files files more, show them all? [y/n]:$nc" show_all_files
 			switch $show_all_files
 			case "y"
 				printf '\033[1A\033[2K\r' 
-				ls_for_cdls | tail -n +45 
+				ls_for_cdls | tail -n +"$tty_lines_cnt"
 				echo "╰───────────────────────────────────────────────────────────╯"
 			case "*"
 				printf '\033[1A\033[2K\r' 
-				echo "╰─\/more─────────────────────────────────────────────more\/─╯"
+				echo "╰───more─────────────────────────────────────────────more───╯"
 			end
 	else
 		echo "╰───────────────────────────────────────────────────────────╯"
