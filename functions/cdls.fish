@@ -83,7 +83,7 @@ function cdls
 			switch $show_all_files
 			case "y"
 				printf '\033[1A\033[2K\r' 
-				ls_for_cdls | tail -n +"$tty_lines_cnt"
+				ls_for_cdls | tail -n +(math 1+"$tty_lines_cnt")
 				echo "╰───────────────────────────────────────────────────────────╯"
 			case "*"
 				printf '\033[1A\033[2K\r' 
