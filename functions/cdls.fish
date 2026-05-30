@@ -11,12 +11,12 @@ function cdls
 	set -g nc (set_color normal)
 	set -g rc (set_color -r)
 
-	set -l values_for_printf "│ %-14s │ %-10s │ %-10s │ %-16s │ %s\n"
+	set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
 
 	function ls_for_cdls
-		set -l values_for_printf "│ %-14s │ %-10s │ %-10s │ %-16s │ %s\n"
+		set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
 	
-		#$1 = permissins $3=userowner $4=groupowner date=dateofcreation $8=file/directory
+		#$1 = permissions $3=userowner $4=groupowner date=dateofcreation $8=file/directory
 		ls -la --time-style=long-iso | awk \
 			-v values="$values_for_printf" \
 			-v blue="$b" \
@@ -69,7 +69,7 @@ function cdls
    	cd $argv 2>/dev/null
 
 	echo "$PWD"
-	printf "$rc$values_for_printf" "permissions" "userown" "groupown" "date created" "file $nc"
+	printf "$rc$values_for_printf" "permissions" "userown" "groupown" "Creation date" "file $nc"
 	
 	ls_for_cdls | head -n 45
 	
