@@ -12,4 +12,4 @@
 Set *CLEAN_TTY* to **True** if you want to enable clearing terminal window while using **cdls**
 Set **False** to disable
 
-![demo](https://github.com/user-attachments/assets/dbf4482a-ffc4-4a82-a8ac-7bd9b8999335)
+![demo](https://github.com/user-attachments/assets/67549f30-b4c4-4ff3-9949-c9c33f8751ea)

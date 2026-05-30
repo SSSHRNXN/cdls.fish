@@ -11,12 +11,10 @@ function cdls
 	set -g nc (set_color normal)
 	set -g rc (set_color -r)			#for message when dir contains more than 45 files/dirs
 
-	set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
+	set -g values_for_printf "│ %-11s │ %-10s │ %-10s │ %-16s │ %s\n"
 	set -l tty_lines_cnt (math $LINES-8)
 
 	function ls_for_cdls
-		set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
-	
 		#$1 = permissions $3=userowner $4=groupowner date=dateofcreation $8=file/directory
 		ls -la --time-style=long-iso | awk \
 			-v values="$values_for_printf" \
@@ -70,27 +68,27 @@ function cdls
    	cd $argv 2>/dev/null
 
 	echo "$PWD"
-	echo "╭───────────────────────────────────────────────────────────╮"
+	echo "╭──────────────────────────────────────────────────────────╮"
 	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date"
-	echo "├───────────────────────────────────────────────────────────┤"
+	echo "├──────────────────────────────────────────────────────────┤"
 
 	ls_for_cdls | head -n "$tty_lines_cnt"
 	
 	set -l counter_of_files (ls -la | wc -l)
 	if [ "$counter_of_files" -gt "$tty_lines_cnt" ]
 		set -l value_of_contain_files (math "$counter_of_files-$tty_lines_cnt")
-		read -P "$rc Dir contains $value_of_contain_files files more, show them all? [y/n]:$nc" show_all_files
+		read -P "╰   $rc Dir contains $value_of_contain_files files more, show them all? [y/n]$nc    ╯ :" show_all_files
 			switch $show_all_files
 			case "y"
 				printf '\033[1A\033[2K\r' 
 				ls_for_cdls | tail -n +(math 1+"$tty_lines_cnt")
-				echo "╰───────────────────────────────────────────────────────────╯"
+				echo "╰──────────────────────────────────────────────────────────╯"
 			case "*"
 				printf '\033[1A\033[2K\r' 
-				echo "╰───more─────────────────────────────────────────────more───╯"
+				echo "╰───more────────────────────────────────────────────more───╯"
 			end
 	else
-		echo "╰───────────────────────────────────────────────────────────╯"
+		echo "╰──────────────────────────────────────────────────────────╯"
 	end	
 
 
