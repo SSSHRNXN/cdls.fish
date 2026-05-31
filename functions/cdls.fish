@@ -10,8 +10,9 @@ function cdls
 	set -g bc (set_color -b cyan)
 	set -g nc (set_color normal)
 	set -g rc (set_color -r)			#for message when dir contains more than 45 files/dirs
+	set -g yw (set_color -b black --bold yellow)
 
-	set -g values_for_printf "│ %-11s │ %-10s │ %-10s │ %-16s │ %s\n"
+	set -g values_for_printf "│ %-11s │ %-10s │ %-10s │ %-16s │ %s \n"
 	set -l tty_lines_cnt (math $LINES-8)
 
 	function ls_for_cdls
@@ -33,6 +34,7 @@ function cdls
 		clear
 	end
 
+	#if select = file
 	if [ -f "$argv" ]
 		echo ""
 		echo -e "$br$argv$nc - is a file!"
@@ -59,17 +61,22 @@ function cdls
 		end
 		if [ "$CLEAN_TTY" = "True" ]
 			clear
-			echo ""
-			echo -e "$br$argv$nc - is a file!"
 		end
-			echo ""
 	end
 
    	cd $argv 2>/dev/null
 
+	set -l git_print_status ""
+	if type git >/dev/null 2> /dev/null
+		git symbolic-ref --short HEAD > /dev/null 2> /dev/null
+		if test "$status" -eq 0 
+			set git_print_status "[$yw B:$(git symbolic-ref --short HEAD) $nc]"
+		end
+	end
+
 	echo "$PWD"
 	echo "╭──────────────────────────────────────────────────────────╮"
-	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date"
+	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date" "$git_print_status"
 	echo "├──────────────────────────────────────────────────────────┤"
 
 	ls_for_cdls | head -n "$tty_lines_cnt"
