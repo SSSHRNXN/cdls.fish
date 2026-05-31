@@ -1,21 +1,21 @@
 function cdls 
-
-	set -l cdls_version "0.0.0.1"
+	#╭╮╰╯─
+	set -l cdls_version "0.0.0.2"
 
 	set -l "CLEAN_TTY" "True"
 
-	set -g c (set_color cyan)
-	set -g b (set_color blue --bold --underline)
+	set -g c (set_color cyan)			#for dirs
+	set -g b (set_color blue --bold)		#for files which no executable(work in progress)
 	set -g br (set_color -b red)
 	set -g bc (set_color -b cyan)
 	set -g nc (set_color normal)
-	set -g rc (set_color -r)
+	set -g rc (set_color -r)			#for message when dir contains more than 45 files/dirs
+	set -g yw (set_color -b black --bold yellow)
 
-	set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
+	set -g values_for_printf "│ %-11s │ %-10s │ %-10s │ %-16s │ %s \n"
+	set -l tty_lines_cnt (math $LINES-8)
 
 	function ls_for_cdls
-		set -l values_for_printf "│ %-12s │ %-10s │ %-10s │ %-16s │ %s\n"
-	
 		#$1 = permissions $3=userowner $4=groupowner date=dateofcreation $8=file/directory
 		ls -la --time-style=long-iso | awk \
 			-v values="$values_for_printf" \
@@ -23,7 +23,7 @@ function cdls
 			-v cyan="$c" '
 			NR>1 {
 				date = $6 " " $7 
-				colorize_if_dir = substr($1,1,1) == "d" ? cyan : blue
+				colorize_if_dir = substr($1,1,1) == "d" ? cyan"/" : blue
 				printf values, $1, $3, $4, date, colorize_if_dir $8 "\033[0m"
 			}'
 	end
@@ -34,6 +34,7 @@ function cdls
 		clear
 	end
 
+	#if select = file
 	if [ -f "$argv" ]
 		echo ""
 		echo -e "$br$argv$nc - is a file!"
@@ -60,31 +61,43 @@ function cdls
 		end
 		if [ "$CLEAN_TTY" = "True" ]
 			clear
-			echo ""
-			echo -e "$br$argv$nc - is a file!"
 		end
-			echo ""
 	end
 
    	cd $argv 2>/dev/null
 
+	set -l git_print_status ""
+	if type git >/dev/null 2> /dev/null
+		git symbolic-ref --short HEAD > /dev/null 2> /dev/null
+		if test "$status" -eq 0 
+			set git_print_status "[$yw B:$(git symbolic-ref --short HEAD) $nc]"
+		end
+	end
+
 	echo "$PWD"
-	printf "$rc$values_for_printf" "permissions" "userown" "groupown" "Creation date" "file $nc"
-	
-	ls_for_cdls | head -n 45
+	echo "╭──────────────────────────────────────────────────────────╮"
+	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date" "$git_print_status"
+	echo "├──────────────────────────────────────────────────────────┤"
+
+	ls_for_cdls | head -n "$tty_lines_cnt"
 	
 	set -l counter_of_files (ls -la | wc -l)
-	if [ "$counter_of_files" -gt 45 ]
-		set -l value_of_contain_files (math "$counter_of_files-45")
-		read -P "$rc Dir contains $value_of_contain_files files more, show them all? [y/n]:$nc" show_all_files
+	if [ "$counter_of_files" -gt "$tty_lines_cnt" ]
+		set -l value_of_contain_files (math "$counter_of_files-$tty_lines_cnt")
+		read -P "╰   $rc Dir contains $value_of_contain_files files more, show them all? [y/n]$nc    ╯ :" show_all_files
 			switch $show_all_files
 			case "y"
 				printf '\033[1A\033[2K\r' 
-				ls_for_cdls | tail -n +45 
+				ls_for_cdls | tail -n +(math 1+"$tty_lines_cnt")
+				echo "╰──────────────────────────────────────────────────────────╯"
 			case "*"
 				printf '\033[1A\033[2K\r' 
+				echo "╰───more────────────────────────────────────────────more───╯"
 			end
+	else
+		echo "╰──────────────────────────────────────────────────────────╯"
 	end	
+
 
 	commandline -r "cdls "
 end
