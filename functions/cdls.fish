@@ -54,6 +54,7 @@ function cdls #╭╮╰╯─ ├┤
 		clear
 	end
 
+	set -g permis_denied "0"
 	#if select = file
 	if [ -f "$argv" ]
 		echo ""
@@ -79,10 +80,8 @@ function cdls #╭╮╰╯─ ├┤
 		if [ "$CLEAN_TTY" = "True" ]
 			clear
 		end
-	end
-
-	set -g permis_denied "0"
-	if not test -z "$argv[1]"; and test -d "$argv[1]"; and test -x "$argv[1]"
+		set -l file_dirname (dirname "$argv[1]") 
+	else if not test -z "$argv[1]"; and test -d "$argv[1]"; and test -x "$argv[1]"
    		cd $argv[1] 2>/dev/null
 	else if not test -z "$argv[1]"; and test -d "$argv[1]"; and not test -x "$argv[1]"
 		set -g permis_denied "1"
