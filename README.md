@@ -12,3 +12,8 @@ Set *CLEAN_TTY* to **True** if you want to enable clearing terminal window while
 Set **False** to disable
 
 ![demo](https://github.com/user-attachments/assets/67549f30-b4c4-4ff3-9949-c9c33f8751ea)
+
+
+* Simple GIT support
+
+![Alt text](https://github.com/user-attachments/assets/fb10f544-2eeb-46ac-b1bd-15a883c1a5de)

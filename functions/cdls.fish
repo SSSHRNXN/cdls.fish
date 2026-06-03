@@ -1,23 +1,43 @@
-function cdls 
-	#╭╮╰╯─
-	set -l cdls_version "0.0.0.2"
+function cdls #╭╮╰╯─ ├┤
+	set -l cdls_version "0.0.0.4"
 
 	set -l "CLEAN_TTY" "True"
-
+	#+++++colors+++++
 	set -g c (set_color cyan)			#for dirs
 	set -g b (set_color blue --bold)		#for files which no executable(work in progress)
-	set -g br (set_color -b red)
+	set -g br (set_color -b red white)
 	set -g bc (set_color -b cyan)
 	set -g nc (set_color normal)
 	set -g rc (set_color -r)			#for message when dir contains more than 45 files/dirs
-	set -g yw (set_color -b black --bold yellow)
+	set -g by (set_color -b black --bold yellow)	#for git current branch
+	#+++++colors+++++
 
+	#+++interface+++
 	set -g values_for_printf "│ %-11s │ %-10s │ %-10s │ %-16s │ %s \n"
-	set -l tty_lines_cnt (math $LINES-8)
+	set -l tty_lines_cnt (math "$LINES - 8")
+	
+	set -l counter_for_repeat_line "58"
+	set -l lines_top "╭"(string repeat -n $counter_for_repeat_line "─")"╮"
+	set -l lines_mid "├"(string repeat -n $counter_for_repeat_line "─")"┤"
+	set -l lines_bot "╰"(string repeat -n $counter_for_repeat_line "─")"╯"
+	set -l lines_if_big_dir "╰───$rc"more"$nc"(string repeat -n (math "$counter_for_repeat_line - 14") "─")"$rc"more"$nc───╯"
+
+	set -l basename_of_file (if not test -z $argv; basename "$argv[1]"; end)
+	if test (math (string length "$basename_of_file" + 21)) -gt $counter_for_repeat_line
+		set -g counter_if_permis_denied "0" 	#TODO: Fix bug if name length > counter_for_repeat_line
+	else
+		set -g counter_if_permis_denied (math $counter_for_repeat_line - 30 - (string length "$basename_of_file"))
+	end
+	set -g lines_if_perrmis_denied "╭───$br"../"$basename_of_file - Permission denied!$nc"(string repeat -n "$counter_if_permis_denied" "─")"───╮"
+	#+++interface+++
+
+	#++++ls args++++
+	set ls_args $argv[2..-1] 
+	#++++ls args++++
 
 	function ls_for_cdls
 		#$1 = permissions $3=userowner $4=groupowner date=dateofcreation $8=file/directory
-		ls -la --time-style=long-iso | awk \
+		ls -la --group-directories-first --time-style=long-iso | awk \
 			-v values="$values_for_printf" \
 			-v blue="$b" \
 			-v cyan="$c" '
@@ -34,13 +54,12 @@ function cdls
 		clear
 	end
 
+	set -g permis_denied "0"
 	#if select = file
 	if [ -f "$argv" ]
 		echo ""
 		echo -e "$br$argv$nc - is a file!"
 		echo ""
-
-
 		echo "1 - nano"
 		echo "2 - vim"
 		echo "q" - "quit"
@@ -57,27 +76,38 @@ function cdls
 					echo ""
 					echo -e "$br$argv$nc - is a file!"
 				end
-					echo ""
 		end
 		if [ "$CLEAN_TTY" = "True" ]
 			clear
 		end
+		set -l file_dirname (dirname "$argv[1]") 
+	else if not test -z "$argv[1]"; and test -d "$argv[1]"; and test -x "$argv[1]"
+   		cd $argv[1] 2>/dev/null
+	else if not test -z "$argv[1]"; and test -d "$argv[1]"; and not test -x "$argv[1]"
+		set -g permis_denied "1"
+	else
+		cd ~
 	end
-
-   	cd $argv 2>/dev/null
 
 	set -l git_print_status ""
 	if type git >/dev/null 2> /dev/null
 		git symbolic-ref --short HEAD > /dev/null 2> /dev/null
 		if test "$status" -eq 0 
-			set git_print_status "[$yw B:$(git symbolic-ref --short HEAD) $nc]"
+			set git_print_status "[$by B:$(git symbolic-ref --short HEAD) $nc]"
 		end
 	end
-
+	
 	echo "$PWD"
-	echo "╭──────────────────────────────────────────────────────────╮"
+
+	printf "%s\n" "$lines_top"
+
+	if test "$permis_denied" -eq 1
+		printf '\033[2;1H\033[2K' 
+		printf "%s\n" "$lines_if_perrmis_denied"
+	end
+
 	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date" "$git_print_status"
-	echo "├──────────────────────────────────────────────────────────┤"
+	printf "%s\n" "$lines_mid"
 
 	ls_for_cdls | head -n "$tty_lines_cnt"
 	
@@ -89,13 +119,13 @@ function cdls
 			case "y"
 				printf '\033[1A\033[2K\r' 
 				ls_for_cdls | tail -n +(math 1+"$tty_lines_cnt")
-				echo "╰──────────────────────────────────────────────────────────╯"
+				printf "%s\n" "$lines_bot"
 			case "*"
 				printf '\033[1A\033[2K\r' 
-				echo "╰───more────────────────────────────────────────────more───╯"
+				printf "%s\n" "$lines_if_big_dir" 
 			end
 	else
-		echo "╰──────────────────────────────────────────────────────────╯"
+		printf "%s\n" "$lines_bot"
 	end	
 
 
