@@ -106,7 +106,7 @@ function cdls #╭╮╰╯─ ├┤
 		printf "%s\n" "$lines_if_perrmis_denied"
 	end
 
-	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Creation date" "$git_print_status"
+	printf "$values_for_printf" "Permissions" "Userown" "Groupown" "Last change" "$git_print_status"
 	printf "%s\n" "$lines_mid"
 
 	ls_for_cdls | head -n "$tty_lines_cnt"
